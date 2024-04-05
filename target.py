@@ -4,12 +4,18 @@ import sys
 
 def help():
     print("""
-Uso: python3 target.py [help|[dir|file]]
+Uso: python3 target.py [help|[dir|file]|mode]
 dir: directorio donde se encuentran los tf para sacar todos los recursos
 file: archivo de tf para sacar los recursos
+mode: modo de ejecución de terraform
+          - plan
+          - apply
+          - destroy
 Ejemplos:
           - python3 target.py dir /home/ubuntu/tf
           - python3 target.py file /home/ubuntu/tf/main.tf
+          - python3 target.py dir /home/ubuntu/tf mode plan
+          - python3 target.py file /home/ubuntu/tf/main.tf mode apply
           - python3 target.py help
 """)
     sys.exit(0)
@@ -24,6 +30,8 @@ def get_params(params):
         if params[i] == "dir":
             par[params[i]] = params[i+1]
         elif params[i] == "file":
+            par[params[i]] = params[i+1]
+        elif params[i] == "mode":
             par[params[i]] = params[i+1]
         elif params[i] == "help":
             help()
@@ -55,7 +63,7 @@ def get_data(tf):
                     res.append(data)
     return res
 
-def generate_targets(res):
+def generate_targets(res,mode):
     for i in range(1,len(res)):
         print("%3d. %s " % (i,res[i]))
     targets = input("Cuales quieres para el target? (lista separada por espacios): ")
@@ -66,7 +74,10 @@ def generate_targets(res):
                 tg.append(res[int(target)])
         except:
             print("No existe el target %d, se omite." % int(target))
-    print(" -target ".join(tg))
+    if mode == "":
+        print(" -target ".join(tg))
+    else:
+        print("terraform "+mode+" -target ".join(tg))
 
 
 if __name__ == "__main__":
@@ -79,6 +90,6 @@ if __name__ == "__main__":
         resources = get_data(tf=tf_files)
     if params["file"] != "":
         resources = get_data(tf=[params["file"]])
-    generate_targets(res=resources)
+    generate_targets(res=resources,mode=params["mode"])
     exit()
 
